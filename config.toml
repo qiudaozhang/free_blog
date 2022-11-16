@@ -1,7 +1,6 @@
 [site]
   title = "dao share"
   host = "https://qiudaozhang.github.io"
-
 [extra]
 # 目标目录，可以在处理完毕之后，将构建好的内容，放到target path
   target_path = "F:\\coding_net\\qiudaozhang.github.io"
