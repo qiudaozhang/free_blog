@@ -1,2 +1,5 @@
 public
 .idea
+*.spec
+build
+dist
