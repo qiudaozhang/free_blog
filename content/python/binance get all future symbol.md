@@ -1,0 +1,21 @@
+
+
+
+
+```python
+import pandas as pd
+from binance.um_futures import UMFutures
+from db import db
+umf = UMFutures()
+
+data = umf.book_ticker()
+for d in data:
+    s = d['symbol']
+    if s.find("USDT") != -1:
+        if s.find("0") == -1:
+            sql = f"select * from sub_s where s = '{s}'"
+            if len(db.query(sql))  == 0:
+                exe_sql = f"insert into sub_s  (s,is_main)  value ('{s}',0)"
+                db.execute(exe_sql)
+
+```
