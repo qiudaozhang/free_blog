@@ -50,7 +50,7 @@ def handle_all_posts():
                 continue
             file = open(full_path, encoding='utf-8')
             md_content = file.read()
-            html = markdown.markdown(md_content, extensions=['fenced_code', 'codehilite'])
+            html = markdown.markdown(md_content, extensions=['fenced_code'])
             blog_templ_path = 'theme/blog.html'
             blog_temp_file = open(blog_templ_path, encoding='utf-8')
             blog_html_template = blog_temp_file.read()

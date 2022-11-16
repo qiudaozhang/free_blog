@@ -5,7 +5,8 @@
 
 [extra]
 # 目标目录，可以在处理完毕之后，将构建好的内容，放到target path
-  target_path = "F:\\coding_net\\qiudaozhang.github.io"
+#  target_path = "F:\\coding_net\\qiudaozhang.github.io"
+  target_path = "E:\\coding\\qiudaozhang.github.io"
 
 # 偏好 这块功能暂时还未实现
 [pref]
