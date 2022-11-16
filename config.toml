@@ -1,7 +1,20 @@
 [site]
   title = "dao share"
   host = "https://qiudaozhang.github.io"
+
+
 [extra]
 # 目标目录，可以在处理完毕之后，将构建好的内容，放到target path
   target_path = "F:\\coding_net\\qiudaozhang.github.io"
-#  target_path = "F:\\coding_net\\test323232"
+
+# 偏好 这块功能暂时还未实现
+[pref]
+# 如果summary为0 代表不需要摘要，摘要简易不要超过200字， 功能暂时为实现
+  sumary = 0
+# 作者
+  author = "邱道长"
+# 展示文章日期格式
+  dateFmt = "yyyyMMdd"
+# 子标题
+  subTitle = "烈火刀法"
+# 友情链接

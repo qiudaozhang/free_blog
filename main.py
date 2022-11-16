@@ -32,11 +32,22 @@ def handle_all_posts():
     g = os.walk('content')
     blog_titles = []
     for path, dir_list, file_list in g:
+
         for file_name in file_list:
+
             file_name_no_ext = file_name[:-3]
             blog_titles.append(file_name_no_ext)
             full_path = f"{path}/{file_name}"
+            # print(full_path)
             f = f'content/{file_name}'
+            if not full_path.endswith(".md"):
+                other_file_path = full_path.replace("content", "public")
+                fp1 = os.path.dirname(full_path)
+                fp2 = fp1.replace("content", "public")
+                if not os.path.exists(fp2):
+                    os.makedirs(fp2)
+                    shutil.copyfile(full_path, other_file_path)
+                continue
             file = open(full_path, encoding='utf-8')
             md_content = file.read()
             html = markdown.markdown(md_content, extensions=['fenced_code', 'codehilite'])
@@ -99,10 +110,11 @@ def handle_every_index():
     public_path = 'public'
     pub_files = os.listdir(public_path)
     for pf in pub_files:
-        if pf.find(".html") == -1:
+        if pf.find(".html") == -1 and pf != "assets":
             titles_html = ''
             for pf2 in os.listdir(f"{public_path}/{pf}"):
-                if pf2.find("index.html") == -1:
+                # print(pf2)
+                if pf2.find("index.html") == -1 and pf2 != "assets":
                     titles_html += f'<li><a href="{pf2}">{pf2[:-5]}</a></li>'
             blog_index_copy = blog_index_html.replace("${{content}}", titles_html)
             blog_index_copy = blog_index_copy.replace("${{title}}", host_title)

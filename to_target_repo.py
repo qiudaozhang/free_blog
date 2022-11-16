@@ -17,7 +17,3 @@ def remove_repo(parent_path):
         else:
             if d != "run.sh":
                 os.remove(full_path)
-
-
-def copy_a2b(from_path, to_path):
-    shutil.copytree(from_path, to_path)

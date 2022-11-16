@@ -1,0 +1,10 @@
+[site]
+# 网站标题
+  title = "xxxxx"
+# 网站的地址
+  host = "https://xxxx.github.io"
+
+
+[extra]
+# 目标目录，可以在处理完毕之后，将构建好的内容，放到target path
+  target_path = "d:\\sample"
