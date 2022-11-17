@@ -1,10 +1,10 @@
 import os
 import shutil
 from distutils.dir_util import copy_tree
-
+from markdown.extensions.tables import TableExtension
 import markdown
 import toml
-
+from markdownTable import markdownTable
 from to_target_repo import remove_repo
 
 data = toml.load('config.toml')
@@ -38,7 +38,6 @@ def handle_all_posts():
             file_name_no_ext = file_name[:-3]
             blog_titles.append(file_name_no_ext)
             full_path = f"{path}/{file_name}"
-            # print(full_path)
             f = f'content/{file_name}'
             if not full_path.endswith(".md"):
                 other_file_path = full_path.replace("content", "public")
@@ -50,13 +49,15 @@ def handle_all_posts():
                 continue
             file = open(full_path, encoding='utf-8')
             md_content = file.read()
-            html = markdown.markdown(md_content, extensions=['fenced_code'])
+            html = markdown.markdown(md_content, extensions=['fenced_code','tables','markdown.extensions.toc','markdown.extensions.tables'])
             blog_templ_path = 'theme/blog.html'
             blog_temp_file = open(blog_templ_path, encoding='utf-8')
             blog_html_template = blog_temp_file.read()
             blog_html_template = blog_html_template.replace('${{title}}', file_name_no_ext)
             blog_html_template = blog_html_template.replace('${{content}}', html)
             blog_html_template = blog_html_template.replace('${{host}}', host)
+            blog_html_template = blog_html_template.replace("<table>",'<table class="table">')
+            # blog_html_template = blog_html_template.replace("<thead>",'<thead class="thead-dark">')
             # 将内容输出到 public 目录下
             path_no_prefix = path[len_content + 1:]
             target_parent = f"public/{path_no_prefix}"
