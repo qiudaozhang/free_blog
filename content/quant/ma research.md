@@ -1448,3 +1448,225 @@ class SingleMa(BaseStrategy):
 
 
 
+## EMA替换
+
+
+
+ma没那么平滑，我们可以考虑用它替换
+
+
+
+```python
+import talib
+from loguru import logger
+
+from db.fkline import find_csv
+from findex import ema
+from strategy.BaseStrategy import BaseStrategy
+
+
+class SingleMa(BaseStrategy):
+
+    def __init__(self, _id, uid, s, margin, sid, mode, ext):
+        super().__init__(_id, uid, s, margin, sid, mode, ext)
+        # 暂时写死
+        i = '15m'
+        self.i = i  # 为k周期比如4h
+        df = find_csv(s, i)
+        df['ma'] = talib.EMA(df['c'], 34)
+        df['ma2'] = talib.EMA(df['c'], 73)
+        df['bias'] = df['c'] - df['ma']
+        df['bias_rate'] = df['bias'] / df['ma']
+        df['bias2'] = df['c'] - df['ma']
+        df['bias2_rate'] = df['bias2'] / df['ma2']
+        df['ma_gap'] = df['ma'] - df['ma2']
+        df['ma_gap_rate'] = df['ma_gap'] / df['ma']
+        self.df = df
+        k = self.df.iloc[-1]
+        self.k = k
+        self.gp = ema.gold_pos_v2(df, 'ma', 'ma2')
+        self.dp = ema.dead_pos_v2(df, 'ma', 'ma2')
+        logger.info(f"gp {self.gp} dp {self.dp}")
+
+    def handle_in(self):
+        k = self.k
+        df = self.df
+        sdf = df[-5:]
+        bias_closer = 2 / 1000
+        max_use = 80
+        df10 = df[-10:]
+
+        if 0 < self.gp < max_use:
+            if len(df10[-10:-5].query('bias_rate < 2/1000')) > 0:
+                if df10[-5:]['h'].max() > df10[-10:-5]['h'].max():
+                    if len(df10.query('bias2_rate < 0')) <= 1:
+                        if sdf['bias_rate'].gt(0).all():
+                            logger.info(k['bias_rate'])
+                            if 0 < k['bias_rate'] < bias_closer * 2:
+                                self.open_long()
+                                return
+        if 0 < self.dp < max_use:
+            if len(df10[-10:-5].query('bias_rate > -2/1000')) > 0:
+                if df10[-5:]['l'].min() > df10[-10:-5]['l'].min():
+                    if sdf['bias_rate'].lt(0).all():
+                        if 0 > k['bias_rate'] > -bias_closer * 2:
+                            self.open_short()
+                            return
+
+    def handle_win_out(self):
+        k = self.k
+        super().handle_win_out()
+        logger.info(f"win {self.get_unrealize_profit()}")
+        if self.has_order:
+            super().handle_loss_out()
+            apm = abs(self.get_price_move())
+            apm_rate = apm / k['c']
+            if apm_rate > 3 / 100:
+                self.close()
+                return
+            if abs(k['bias_rate']) > 1 / 100:
+                self.close()
+                return
+            if self.has_order:
+                if apm_rate > 1 / 100:
+                    self.reverse_break_close()
+
+    def handle_loss_out(self):
+        k = self.k
+        c = k['c']
+        apm = abs(self.get_price_move())
+        apm_rate = apm / k['c']
+        lp_key = self.create_key('loss_price')
+        # logger.info(f"loss {self.get_pure_win():.4f}")
+        # logger.info(apm_rate)
+        logger.info(k['ma_gap'])
+        logger.info(k['ma_gap_rate'])
+        super().handle_loss_out()
+        if self.get_unrealize_profit_rate() < -60 / 100:
+            self.close()
+            return
+
+        if not self.have_key(lp_key):
+            if self.is_now_long():
+                self.save_loss_price(self.df[-20:]['l'].min() - c / 100)
+            if self.is_now_short():
+                self.save_loss_price(self.df[-20:]['h'].max() + c / 100)
+
+    def reverse_break_close(self):
+        k = self.k
+        if self.is_now_long():
+            if k['c'] < 0:
+                self.close()
+                return
+        if self.is_now_short():
+            if k['c'] > 0:
+                self.close()
+                return
+```
+
+
+
+
+
+
+
+## 回测
+
+
+
+
+
+
+
+| 问题           | 是否解决 | 解决办法                                                   |
+| -------------- | -------- | ---------------------------------------------------------- |
+| 方向           | 是       | 连续的ma的单边性                                           |
+| 入场价格       | 是       | bias接近率                                                 |
+| 止损           | 是       | 计算止损、最大止损、反向连续突破性止损                     |
+| 止盈           | 是       | 最大止盈、bias偏移过大止盈、较长利润之后的连续反向突破止盈 |
+| 频率问题       | 60%      | 验证技术可以优化                                           |
+| 震荡性反复亏损 | 60%      | 验证技术可以优化                                           |
+| 恶意插针       | 否       | 这个问题无法预测，无好的解决办法                           |
+| 验证无效       | 是       | 以最新的10进行裸K判定以及双bias的破坏保护                  |
+| 回踩后暴跌     | 否       | gap优化                                                    |
+
+
+
+时效性交易： 2022-11-17 17:48 ~| 2022-11-17 23:48
+币对  		ethusdtt
+入场价 	1231
+方向		空
+止盈价格	1123
+止损价格	1276
+建议杠杆	6
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
