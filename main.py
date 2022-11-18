@@ -49,14 +49,15 @@ def handle_all_posts():
                 continue
             file = open(full_path, encoding='utf-8')
             md_content = file.read()
-            html = markdown.markdown(md_content, extensions=['fenced_code','tables','markdown.extensions.toc','markdown.extensions.tables'])
+            html = markdown.markdown(md_content, extensions=['fenced_code', 'tables', 'markdown.extensions.toc',
+                                                             'markdown.extensions.tables'])
             blog_templ_path = 'theme/blog.html'
             blog_temp_file = open(blog_templ_path, encoding='utf-8')
             blog_html_template = blog_temp_file.read()
             blog_html_template = blog_html_template.replace('${{title}}', file_name_no_ext)
             blog_html_template = blog_html_template.replace('${{content}}', html)
             blog_html_template = blog_html_template.replace('${{host}}', host)
-            blog_html_template = blog_html_template.replace("<table>",'<table class="table">')
+            blog_html_template = blog_html_template.replace("<table>", '<table class="table">')
             # blog_html_template = blog_html_template.replace("<thead>",'<thead class="thead-dark">')
             # 将内容输出到 public 目录下
             path_no_prefix = path[len_content + 1:]
@@ -127,6 +128,7 @@ def handle_every_index():
 
 if __name__ == "__main__":
 
+    remove_repo('public')
     handle_all_posts()
 
     handle_home_page()
